@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "io.spring.dependency-management" version "1.0.9.RELEASE"
+    id "org.datlowe.maven-publish-auth" version "2.0.2"
+    id "net.researchgate.release" version "2.8.1"
+    id "io.freefair.aspectj.post-compile-weaving" version "5.3.0"
+}
+
+group = 'com.azimo.tukan'
+sourceCompatibility = 11
+targetCompatibility = 11
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+jar {
+    manifest { attributes("Implementation-Vendor": "Azimo") }
+    manifest { attributes("Implementation-Version": archiveVersion) }
+}
+
+test {
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        showStandardStreams = true
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://repo.spring.io/release" }
+    maven { url "https://nexus.azimo.com/repository/maven-central" }
+    maven { url "https://nexus.azimo.com/repository/maven-releases" }
+    maven { url "https://nexus.azimo.com/repository/maven-snapshots" }
+    maven { url "https://repo.spring.io/release" }
+}
+
+ext {
+    baseName = 'lib-azimo-logging'
+    lombokVersion = '1.18.8'
+    logstashLogbackEncoderVersion = '6.5'
+    aspectjVersion = '1.9.6'
+    springVersion = '5.3.1'
+    log4jVersion = '2.14.0'
+    junitVersion = '5.7.0'
+}
+
+dependencies {
+    implementation "org.springframework:spring-context:${springVersion}"
+    implementation "org.aspectj:aspectjrt:${aspectjVersion}"
+    implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}"
+
+    /** lombok **/
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+}
+
+description = 'lib-azimo-logging'
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "nexus.azimo.com"
+            url "https://nexus.azimo.com/repository/maven-${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }/"
+        }
+    }
+}
+
+afterReleaseBuild.dependsOn publish

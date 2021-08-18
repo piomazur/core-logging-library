@@ -1,0 +1,7 @@
+pluginManagement {
+    repositories {
+        maven { url "https://nexus.azimo.com/repository/plugins.gradle" }
+    }
+}
+
+rootProject.name = 'lib-azimo-logging'
